@@ -11,7 +11,7 @@ The benchmark executes a series of tests on 5 different models:
 4.  `BAAI/bge-base-en-v1.5` (Modern Balanced)
 5.  `intfloat/e5-small-v2` (Competitor)
 
-It generates a detailed report (`results/article.md`) and rich visualisations to demonstrate the trade-offs between speed, accuracy, and cost...
+It generates a detailed report (`results/article.md`) and rich visualisations to demonstrate the trade-offs between speed, accuracy, and cost.
 
 ## Requirements
 
