@@ -1,0 +1,7 @@
+pandas
+matplotlib
+seaborn
+sentence-transformers
+openai
+pyyaml
+tabulate
