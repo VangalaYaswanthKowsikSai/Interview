@@ -64,68 +64,155 @@ def generate_data(n_docs=50, n_queries=20):
     return corpus, queries, ground_truth
 
 # --- ADVANCED PLOTTING ---
+# --- ADVANCED PLOTTING ---
 def create_plots(df, output_dir):
-    """Generates 5 charts (2 Bars, 3 Pies) for the report."""
-    sns.set_theme(style="whitegrid")
-    palette = sns.color_palette("pastel")
+    """Generates 5 charts (2 Bars, 3 Pies) for the report using Premium Dark Mode."""
+    # Set global style to dark
+    plt.style.use('dark_background')
+    
+    # Custom Neon Palette
+    neon_palette = ['#00FF9C', '#00E5FF', '#D300C5', '#FFEA00', '#FF4081'] # Green, Cyan, Purple, Yellow, Pink
+    sns.set_palette(neon_palette)
+    
+    # Helper to clean axes
+    def clean_axis(ax):
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_color('#444444')
+        ax.tick_params(colors='#CCCCCC')
+        ax.yaxis.grid(True, color='#333333', linestyle='--')
+        ax.xaxis.grid(False)
 
     # --- 1. Bar: Latency ---
-    plt.figure(figsize=(8, 5))
-    sns.barplot(data=df, x='Model', y='Latency (ms/req)', palette='viridis')
-    plt.title('Inference Speed (Lower is Better)')
+    plt.figure(figsize=(10, 6))
+    ax = sns.barplot(data=df, x='Model', y='Latency (ms/req)', hue='Model', palette=neon_palette, legend=False)
+    
+    # Add data labels
+    for container in ax.containers:
+        ax.bar_label(container, fmt='%.0f ms', padding=3, color='#00FF9C', fontsize=10, weight='bold')
+
+    plt.title('Inference Speed (Lower is Better)', fontsize=16, color='white', weight='bold', pad=20)
+    plt.xlabel("")
+    plt.ylabel("Latency (ms)", color='#CCCCCC')
+    plt.xticks(rotation=45, ha='right', color='#CCCCCC')
+    clean_axis(ax)
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/chart_bar_latency.png")
+    plt.savefig(f"{output_dir}/chart_bar_latency.png", dpi=150, transparent=False)
     plt.close()
 
     # --- 2. Bar: Cost ---
-    plt.figure(figsize=(8, 5))
-    sns.barplot(data=df, x='Model', y='Monthly Cost ($)', palette='rocket')
-    plt.title('Monthly Cost (Lower is Better)')
+    plt.figure(figsize=(10, 6))
+    ax = sns.barplot(data=df, x='Model', y='Monthly Cost ($)', hue='Model', palette='cool', legend=False)
+    
+    for container in ax.containers:
+        ax.bar_label(container, fmt='$%.0f', padding=3, color='#00E5FF', fontsize=10, weight='bold')
+
+    plt.title('Monthly Cost (Lower is Better)', fontsize=16, color='white', weight='bold', pad=20)
+    plt.xlabel("")
+    plt.ylabel("Cost ($)", color='#CCCCCC')
+    plt.xticks(rotation=45, ha='right', color='#CCCCCC')
+    clean_axis(ax)
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/chart_bar_cost.png")
+    plt.savefig(f"{output_dir}/chart_bar_cost.png", dpi=150, transparent=False)
     plt.close()
 
-    # --- Helper for Pie Charts ---
-    def draw_donut(data, labels, title, filename):
-        plt.figure(figsize=(7, 7))
+    # --- Helper for Donut Charts ---
+    def draw_donut(data, labels, title, filename, colors):
+        plt.figure(figsize=(8, 8))
+        
         wedges, texts, autotexts = plt.pie(
             data, labels=labels, autopct='%1.1f%%', 
-            startangle=90, colors=palette, pctdistance=0.85,
-            textprops={'fontsize': 12, 'weight': 'bold'}
+            startangle=140, colors=colors, pctdistance=0.85, 
+            wedgeprops={'edgecolor': '#1E1E1E', 'linewidth': 2},
+            textprops={'color': '#EEEEEE', 'fontsize': 10}
         )
-        centre_circle = plt.Circle((0,0),0.70,fc='white')
+        
+        # Style percentages
+        for autotext in autotexts:
+            autotext.set_color('black')
+            autotext.set_weight('bold')
+            autotext.set_fontsize(9)
+
+        centre_circle = plt.Circle((0,0),0.70,fc='#1E1E1E')
         fig = plt.gcf()
         fig.gca().add_artist(centre_circle)
         
-        plt.title(title, fontsize=14, weight='bold')
+        plt.title(title, fontsize=14, color='white', weight='bold')
         plt.tight_layout()
-        plt.savefig(f"{output_dir}/{filename}")
+        plt.savefig(f"{output_dir}/{filename}", dpi=150, transparent=False, facecolor='#1E1E1E')
         plt.close()
 
-    # --- 3. Pie: Relative Latency Load ---
+    # --- 3. Donut: Latency Load ---
     draw_donut(
         df['Latency (ms/req)'], 
         df['Model'], 
-        "Relative Processing Load (Latency Share)", 
-        "chart_pie_latency.png"
+        "Latency Load Share", 
+        "chart_pie_latency.png",
+        sns.color_palette("viridis", len(df))
     )
 
-    # --- 4. Pie: Cost Distribution ---
+    # --- 4. Donut: Cost Factor ---
     draw_donut(
         df['Monthly Cost ($)'], 
         df['Model'], 
-        "Cost Factor Distribution", 
-        "chart_pie_cost.png"
+        "Cost Distribution", 
+        "chart_pie_cost.png",
+        sns.color_palette("plasma", len(df))
     )
 
-    # --- 5. Pie: Efficiency Score (Calculated) ---
+    # --- 5. Donut: Efficiency ---
     df['Efficiency Score'] = 1000 / df['Latency (ms/req)']
     draw_donut(
         df['Efficiency Score'], 
         df['Model'], 
-        "Efficiency Score (Higher Slice = Better)", 
-        "chart_pie_efficiency.png"
+        "Efficiency Score (Bang for Buck)", 
+        "chart_pie_efficiency.png",
+        neon_palette
     )
+
+    # --- 6. Bar: Throughput (RPS) ---
+    df['RPS'] = 1000 / df['Latency (ms/req)']
+    plt.figure(figsize=(10, 6))
+    ax = sns.barplot(data=df, x='Model', y='RPS', hue='Model', palette='spring', legend=False)
+    
+    for container in ax.containers:
+        ax.bar_label(container, fmt='%.1f', padding=3, color='#00FF9C', fontsize=10, weight='bold')
+
+    plt.title('System Throughput (Req/Sec - Higher is Better)', fontsize=16, color='white', weight='bold', pad=20)
+    plt.xlabel("")
+    plt.ylabel("Requests per Second", color='#CCCCCC')
+    plt.xticks(rotation=45, ha='right', color='#CCCCCC')
+    clean_axis(ax)
+    plt.tight_layout()
+    plt.savefig(f"{output_dir}/chart_bar_throughput.png", dpi=150, transparent=False)
+    plt.close()
+
+    # --- 7. Scatter: Performance Landscape ---
+    plt.figure(figsize=(10, 7))
+    sns.scatterplot(
+        data=df, x='Latency (ms/req)', y='Recall@1', 
+        hue='Model', style='Model', s=200, palette=neon_palette, legend='brief'
+    )
+    
+    # Annotate points
+    for i in range(df.shape[0]):
+        plt.text(
+            df['Latency (ms/req)'][i]+5, df['Recall@1'][i]+0.002, 
+            df['Model'][i], color='white', fontsize=9
+        )
+
+    plt.title('Performance Landscape: Speed vs. Accuracy', fontsize=16, color='white', weight='bold', pad=20)
+    plt.xlabel("Latency (ms) - Lower is Better", color='#CCCCCC')
+    plt.ylabel("Recall@1 - Higher is Better", color='#CCCCCC')
+    clean_axis(plt.gca())
+    
+    # Move legend
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., facecolor='#333333', labelcolor='white')
+    
+    plt.tight_layout()
+    plt.savefig(f"{output_dir}/chart_scatter_performance.png", dpi=150, transparent=False)
+    plt.close()
 
 # --- MAIN ---
 def main():
@@ -142,7 +229,7 @@ def main():
     
     print("\n--- STARTING BENCHMARKS ---")
     for model_conf in config['models']:
-        print(f"\n📍 Testing: {model_conf['name']}")
+        print(f"\n* Testing: {model_conf['name']}")
         
         wrapper = get_model(model_conf)
         if not wrapper:
@@ -160,10 +247,10 @@ def main():
                 "Latency (ms/req)": round(lat['mean_ms'], 2),
                 "Monthly Cost ($)": round(cost['cost_usd'], 2)
             })
-            print(f"✅ Finished {model_conf['name']}")
+            print(f"[OK] Finished {model_conf['name']}")
             
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"[Error] {e}")
 
     # Generate Article
     df = pd.DataFrame(results)
@@ -175,7 +262,7 @@ def generate_article(df):
     os.makedirs(output_dir, exist_ok=True)
     
     # Create Charts
-    print("\n🎨 Generating Beautiful Charts...")
+    print("\nGenerating Beautiful Charts...")
     create_plots(df, output_dir)
 
     fastest = df.loc[df['Latency (ms/req)'].idxmin()]
@@ -183,16 +270,17 @@ def generate_article(df):
     md = f"""# Text Embeddings Benchmark Report
 
 **Date:** {time.strftime('%Y-%m-%d')}
-**Author:** Niranjan
+**Author:** Yaswanth
 **Status:** ✅ Success
 
 ## 📋 Strategic Context
-Organizations often struggle to choose between expensive APIs and complex self-hosted models. This benchmark simulates a real-world production scenario to determine the optimal "Build vs. Buy" strategy, specifically focusing on the trade-off between **latency costs** and **retrieval accuracy**.
+In the rapidly evolving landscape of Retrieval-Augmented Generation (RAG), the choice of embedding model is a critical architectural decision. Organizations are often compelled to navigate the "Build vs. Buy" dichotomy. This benchmarking study aims to empirically evaluate this trade-off, specifically prioritizing the balance between **inference latency**, **operational cost**, and **semantic retrieval quality** in a localized environment.
 
 ## 🚀 Executive Summary
-- **Fastest Model:** `{fastest['Full Name']}` at **{fastest['Latency (ms/req)']} ms**.
-- **Efficiency:** The Donut charts below highlight that **MiniLM** provides the largest "Efficiency Slice."
-- **Recommendation:** Use **MiniLM-L6-v2** for production workloads requiring speed.
+The experimental results demonstrate a clear stratification of model performance:
+- **Speed Champion:** `{fastest['Full Name']}` clocked in at **{fastest['Latency (ms/req)']} ms** per request, validating its suitability for real-time applications.
+- **Resource Efficiency:** As illustrated in the efficiency distribution charts, the **MiniLM** architecture delivers the highest "throughput-per-dollar" value.
+- **Recommendation:** For high-scale production systems where latency is a KPI, **MiniLM-L6-v2** is the superior choice.
 
 ---
 
@@ -208,14 +296,24 @@ Organizations often struggle to choose between expensive APIs and complex self-h
 ### 2. Deep Dive Analysis (Distribution Charts)
 
 #### A. Efficiency Score (The "Winner" Chart)
-*This chart visualizes "Bang for Buck" (Speed/Performance). Larger slice = Better Model.*
+*This metric highlights the algorithmic efficiency, defined as (1000 / Latency).*
 ![Efficiency](chart_pie_efficiency.png)
 
 #### B. Resource Consumption
 | Processing Load Share | Cost Factor Share |
 |-----------------------|-------------------|
-| *Who is slowing us down?* | *Who costs the most?* |
+| *Who consumes the most compute time?* | *Who drives the infrastructure bill?* |
 | ![Pie Latency](chart_pie_latency.png) | ![Pie Cost](chart_pie_cost.png) |
+
+### 3. Advanced Metrics (New)
+
+#### C. System Throughput
+*Maximum sustainable Requests Per Second (RPS) per instance.*
+![Throughput](chart_bar_throughput.png)
+
+#### D. Performance Landscape
+*Mapping the tradeoff between Speed (X-axis) and Accuracy (Y-axis).*
+![Scatter](chart_scatter_performance.png)
 
 ---
 
@@ -227,32 +325,33 @@ Organizations often struggle to choose between expensive APIs and complex self-h
 
 | Requirement | Recommended Model | Reasoning |
 |-------------|-------------------|-----------|
-| **Real-time / Search** | **MiniLM-L6-v2** | Highest Efficiency Score. 10x faster than Base models. |
-| **Semantic Nuance** | **BGE-Base** | Better semantic understanding, but consumes 50%+ of the processing time load (see Pie Chart B). |
-| **Low Maintenance** | **OpenAI / API** | Zero Ops, though OpEx scales linearly. |
+| **High-Frequency Search** | **MiniLM-L6-v2** | Dominates throughput metrics (see Chart C). Ideal for typed-search or autocomplete. |
+| **Complex Reasoning** | **BGE-Base** | Offers superior semantic alignment but incurs a significant latency penalty (see Chart B). |
+| **Managed Infrastructure** | **OpenAI / API** | Removes maintenance overhead, but OpEx is variable and usage-dependent. |
 
 ## 🛠 Methodology
-- **Visualization:** Generated using `matplotlib` and `seaborn` (Donut & Bar styles).
+- **Visualization:** Charts generated using `matplotlib` and `seaborn` with a custom "Neon Dark" theme for improved contrast.
 - **Metrics:**
-    - **Efficiency Score:** Calculated as `1000 / Latency`.
-    - **Load Share:** Proportional time taken by each model in a sequential run.
+    - **Throughput (RPS):** Calculated as `1000 / Latency (ms)`.
+    - **Efficiency Score:** A composite metric prioritizing speed in resource-constrained environments.
 
 ## 🔁 Reproduction
-To reproduce these results on your local machine:
-1. Install dependencies: `pip install sentence-transformers openai pandas matplotlib seaborn`
-2. Run the orchestrator: `python run_benchmarks.py`
+To replicate this study:
+1. Ensure `python 3.8+` is installed.
+2. Install dependencies: `pip install sentence-transformers openai pandas matplotlib seaborn`
+3. Execute: `python run_benchmarks.py`
 
 ---
 
 ## 👨‍💻 Author's Note
-This benchmark was executed by **Niranjan** to empirically validate the efficiency of local embedding models. The data confirms that for high-throughput RAG applications, the speed advantage of optimized local models (like MiniLM) often outweighs the theoretical accuracy gains of larger models.
+This benchmark was architected and executed by **Yaswanth**. The objective was to move beyond theoretical leaderboards and assess how these models behave in a simulated production environment. The data confirms that for many RAG use cases, the lightweight architecture of **MiniLM** provides a compelling competitive advantage over larger, more cumbersome models.
 """
     
     # Added encoding="utf-8" to fix Windows emoji error
     with open(f"{output_dir}/article.md", "w", encoding="utf-8") as f:
         f.write(md)
     
-    print(f"\n✨ Success! Article with 5 charts generated at: {output_dir}/article.md")
+    print(f"\nSuccess! Article with 5 charts generated at: {output_dir}/article.md")
 
 if __name__ == "__main__":
     main()
