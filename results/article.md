@@ -9,7 +9,7 @@ In the rapidly evolving landscape of Retrieval-Augmented Generation (RAG), the c
 
 ## 🚀 Executive Summary
 The experimental results demonstrate a clear stratification of model performance:
-- **Speed Champion:** `sentence-transformers/all-MiniLM-L6-v2` clocked in at **54.71 ms** per request, validating its suitability for real-time applications.
+- **Speed Champion:** `sentence-transformers/all-MiniLM-L6-v2` clocked in at **42.9 ms** per request, validating its suitability for real-time applications.
 - **Resource Efficiency:** As illustrated in the efficiency distribution charts, the **MiniLM** architecture delivers the highest "throughput-per-dollar" value.
 - **Recommendation:** For high-scale production systems where latency is a KPI, **MiniLM-L6-v2** is the superior choice.
 
@@ -52,11 +52,11 @@ The experimental results demonstrate a clear stratification of model performance
 
 | Full Name                               |   Recall@1 |   Latency (ms/req) |   Monthly Cost ($) |
 |:----------------------------------------|-----------:|-------------------:|-------------------:|
-| sentence-transformers/all-MiniLM-L6-v2  |       1    |              54.71 |             378.72 |
-| sentence-transformers/all-mpnet-base-v2 |       0.95 |             284    |             378.72 |
-| BAAI/bge-small-en-v1.5                  |       1    |              98.63 |             378.72 |
-| BAAI/bge-base-en-v1.5                   |       1    |             310.75 |             378.72 |
-| intfloat/e5-small-v2                    |       1    |             102.76 |             378.72 |
+| sentence-transformers/all-MiniLM-L6-v2  |       1    |              42.9  |             378.72 |
+| sentence-transformers/all-mpnet-base-v2 |       0.95 |             255.51 |             378.72 |
+| BAAI/bge-small-en-v1.5                  |       1    |              86.56 |             378.72 |
+| BAAI/bge-base-en-v1.5                   |       1    |             255.51 |             378.72 |
+| intfloat/e5-small-v2                    |       1    |              84.78 |             378.72 |
 
 ## 🧠 Analysis & Decision Matrix
 
