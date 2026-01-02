@@ -1,0 +1,36 @@
+models:
+  # 1. The Speed Standard (Fastest)
+  - name: "sentence-transformers/all-MiniLM-L6-v2"
+    type: "local"
+    provider: "huggingface"
+    cost_per_1m_tokens: 0.00
+
+  # 2. The Quality Standard (Most Accurate / Slower)
+  - name: "sentence-transformers/all-mpnet-base-v2"
+    type: "local"
+    provider: "huggingface"
+    cost_per_1m_tokens: 0.00
+
+  # 3. Modern Efficient (Newer than MiniLM)
+  - name: "BAAI/bge-small-en-v1.5"
+    type: "local"
+    provider: "huggingface"
+    cost_per_1m_tokens: 0.00
+
+  # 4. Modern Balanced (Newer than MPNet)
+  - name: "BAAI/bge-base-en-v1.5"
+    type: "local"
+    provider: "huggingface"
+    cost_per_1m_tokens: 0.00
+
+  # 5. The Competitor (Different Architecture)
+  - name: "intfloat/e5-small-v2"
+    type: "local"
+    provider: "huggingface"
+    cost_per_1m_tokens: 0.00
+
+# Test Settings
+test_settings:
+  dataset_size: 50  # Keep small to run fast
+  query_count: 20   
+  top_k: 5
